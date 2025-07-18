@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wet Cat Status Panel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background-color: #e0e0e0;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+
+    .emoticat {
+      font-size: 2rem;
+      margin: 1rem 0;
+      min-height: 2.5rem;
+    }
+
+    .mood {
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+      height: 1.2rem;
+    }
+
+    .meter {
+      width: 200px;
+      height: 20px;
+      background: #ccc;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #888;
+      margin-bottom: 1rem;
+      position: relative;
+      border-radius: 3px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 1px;
+      transition: width 0.3s ease, background-color 0.5s ease;
+      background: red; /* default */
+    }
+
+    button {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 4px 4px 0 #888;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      cursor: pointer;
+      margin: 5px 8px;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+      border-radius: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    button:active {
+      box-shadow: 2px 2px 0 #555;
+      transform: translate(2px, 2px);
+    }
+
+    /* Floating *pat* text */
+    .pat-text {
+      position: absolute;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      color: #ff69b4;
+      user-select: none;
+      pointer-events: none;
+      animation: floatUpFade 1s ease forwards;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #fff;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Paw print emoji with pat text */
+    .paw-print {
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    @keyframes floatUpFade {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px);
+      }
+    }
+
+    /* Responsive scaling for smaller screens */
+    @media (max-width: 400px) {
+      .emoticat {
+        font-size: 1.6rem;
+      }
+      button {
+        font-size: 0.5rem;
+        padding: 8px 12px;
+      }
+      .meter {
+        width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 wet cat status panel</h1>
+
+  <div class="emoticat" id="cat">(＿ ＿ ) Ⳋ</div>
+  <div class="mood" id="mood">mood: deflated blob</div>
+
+  <div class="meter">
+    <div class="meter-fill" id="meter-fill"></div>
+  </div>
+
+  <div>
+    <button onclick="floofCat()">🧺 floof with towel</button>
+    <button onclick="patPat(event)">つ(•˕ •マ.ᐟ pat pat</button>
+  </div>
+
+  <p id="counter">towel count: 0</p>
+
+  <script>
+    const stages = [
+      { emoticon: "(＿ ＿ ) Ⳋ", mood: "deflated blob", max: 5 },
+      { emoticon: "/ᐠ; ^ ;マⳊ", mood: "soggy baby", max: 15 },
+      { emoticon: "/ᐠ｡‸｡マ⟆", mood: "misty but trying", max: 25 },
+      { emoticon: "≽^- ˕ -^≼", mood: "neutral puddle cat", max: 35 },
+      { emoticon: "≽^•˕• ྀི≼", mood: "polite dry floof", max: 45 },
+      { emoticon: "₍^•⩊•^₎⟆ ₊˚⊹ 🍞", mood: "CRISPY BAKED LOAF", max: Infinity },
+    ];
+
+    let towelCount = 0;
+    let isBlinking = false;
+
+    function getCurrentStage() {
+      return stages.find(stage => towelCount <= stage.max);
+    }
+
+    function updateDisplay(emoticon, mood) {
+      document.getElementById("cat").textContent = emoticon;
+      document.getElementById("mood").textContent = `Mood: ${mood}`;
+      const fillPercent = Math.min(towelCount / 50, 1) * 100;
+      const meterFill = document.getElementById("meter-fill");
+      meterFill.style.width = `${fillPercent}%`;
+
+      // Color transition red -> yellow -> green
+      if (fillPercent < 50) {
+        // red to yellow
+        const greenVal = Math.round((fillPercent / 50) * 255);
+        meterFill.style.backgroundColor = `rgb(255, ${greenVal}, 0)`;
+      } else {
+        // yellow to green
+        const redVal = Math.round(255 - ((fillPercent - 50) / 50) * 255);
+        meterFill.style.backgroundColor = `rgb(${redVal}, 255, 0)`;
+      }
+
+      document.getElementById("counter").textContent = `towel count: ${towelCount}`;
+    }
+
+    function floofCat() {
+      if (isBlinking) return; // prevent action during blink
+      towelCount++;
+      const stage = getCurrentStage();
+      updateDisplay(stage.emoticon, stage.mood);
+    }
+
+    function patPat(event) {
+      if (isBlinking) return; // prevent overlapping blink
+      isBlinking = true;
+
+      const stage = getCurrentStage();
+      const blinkEmoticon = "つ/ᐠ . _ . マ";
+
+      // Show blink emoticon briefly
+      updateDisplay(blinkEmoticon, stage.mood);
+
+      // Show floating *pat* + paw print near the clicked button
+      const patText = document.createElement('div');
+      patText.className = 'pat-text';
+      patText.style.left = `${event.clientX - 20}px`;
+      patText.style.top = `${event.clientY - 40}px`;
+      patText.innerHTML = `<span class="paw-print">🐾</span> *pat*`;
+      document.body.appendChild(patText);
+
+      setTimeout(() => {
+        patText.remove();
+      }, 1000);
+
+      setTimeout(() => {
+        updateDisplay(stage.emoticon, stage.mood);
+        isBlinking = false;
+      }, 500);
+    }
+
+    // Initialize display on load
+    updateDisplay(stages[0].emoticon, stages[0].mood);
+  </script>
+
+</body>
+</html>
