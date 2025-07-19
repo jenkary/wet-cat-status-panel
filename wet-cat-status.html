@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wet Cat Status Panel</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    body {
+      font-family: 'Press Start 2P', cursive;
+      background-color: #e0e0e0;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      text-align: center;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 100;
+    }
+
+    #weather-icon {
+      position: fixed;
+      top: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 3rem;
+      user-select: none;
+      pointer-events: none;
+      z-index: 100;
+      transition: transform 3s ease, opacity 3s ease, color 3s ease;
+      color: #5a8de3;
+    }
+
+    #weather-icon.sun {
+      color: #ffdd33;
+    }
+
+    #drizzle-container {
+      position: fixed;
+      top: 4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 120px;
+      pointer-events: none;
+      user-select: none;
+      z-index: 50;
+      overflow: visible;
+    }
+
+    .drizzle-drop {
+      position: absolute;
+      font-size: 1.4rem;
+      color: #7ec8ff;
+      opacity: 0.8;
+      animation-name: drizzle-fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+    }
+
+    @keyframes drizzle-fall {
+      0% {
+        transform: translateY(0);
+        opacity: 0.8;
+      }
+      50% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(20px);
+        opacity: 0.8;
+      }
+    }
+
+    .emoticat {
+      font-size: 2rem;
+      margin: 1rem 0;
+      min-height: 2.5rem;
+      font-family: 'Courier New', monospace;
+    }
+
+    .mood {
+      font-size: 0.8rem;
+      margin-bottom: 1rem;
+      height: 1.2rem;
+    }
+
+    .meter {
+      width: 200px;
+      height: 20px;
+      background: #ccc;
+      border: 2px solid #000;
+      box-shadow: inset 2px 2px 0 #888;
+      margin-bottom: 1rem;
+      position: relative;
+      border-radius: 3px;
+    }
+
+    .meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 1px;
+      transition: width 0.3s ease, background-color 0.5s ease;
+      background: red;
+    }
+
+    .comfort-container {
+      margin: 1rem 0;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 1rem;
+      line-height: 1.5;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 0 #fff;
+    }
+
+    .comfort-label {
+      font-size: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    #comfort-bar {
+      font-size: 1.2rem;
+    }
+
+    .heart {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin: 0 1px;
+      user-select: none;
+      text-shadow: 1px 1px 1px #fff;
+    }
+
+    button {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 4px 4px 0 #888;
+      padding: 10px 16px;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.6rem;
+      cursor: pointer;
+      margin: 5px 8px;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+      border-radius: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    button:active {
+      box-shadow: 2px 2px 0 #555;
+      transform: translate(2px, 2px);
+    }
+
+    .pat-text {
+      position: absolute;
+      font-family: 'Press Start 2P', cursive;
+      font-size: 0.7rem;
+      color: #ff69b4;
+      user-select: none;
+      pointer-events: none;
+      animation: floatUpFade 1s ease forwards;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #fff;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .paw-print {
+      width: 48px;
+      height: 48px;
+      image-rendering: pixelated;
+      transform: scale(2);
+    }
+
+    @keyframes floatUpFade {
+      0% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-40px);
+      }
+    }
+
+    .floof-flake {
+      position: absolute;
+      font-size: 1.4rem;
+      color: #bdf;
+      opacity: 1;
+      animation: snowFloat 1.5s ease-out forwards;
+      pointer-events: none;
+      user-select: none;
+      z-index: 30;
+    }
+
+    @keyframes snowFloat {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-60px) scale(1.4) rotate(15deg);
+        opacity: 0.5;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .emoticat {
+        font-size: 1.6rem;
+      }
+      button {
+        font-size: 0.5rem;
+        padding: 8px 12px;
+      }
+      .meter {
+        width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🐾 wet cat status panel</h1>
+
+  <!-- Weather cloud/sun -->
+  <div id="weather-icon">☁︎</div>
+  <!-- Drizzle raindrops container -->
+  <div id="drizzle-container"></div>
+
+  <div class="emoticat" id="cat">(＿ ＿ ) Ⳋ</div>
+  <div class="mood" id="mood">mood: deflated blob</div>
+
+  <div class="meter">
+    <div class="meter-fill" id="meter-fill"></div>
+  </div>
+
+  <div class="comfort-container">
+    <div class="comfort-label">comfort-o-meter:</div>
+    <div id="comfort-bar"></div>
+  </div>
+
+  <div>
+    <button id="floofBtn" onclick="floofCat(event)">🧺 floof with towel</button>
+    <button id="patBtn" onclick="patPat(event)">つ(•˕ •マ.ᐟ pat pat</button>
+  </div>
+
+  <p id="counter">towel count: 0</p>
+
+  <!-- Audio Elements -->
+  <audio id="click-sound" src="click.mp3" preload="auto"></audio>
+  <audio id="mlem-sound" src="mlem.mp3" preload="auto"></audio>
+
+  <script>
+    const stages = [
+      { emoticon: "(＿ ＿ ) Ⳋ", mood: "deflated blob", max: 5 },
+      { emoticon: "/ᐠ; ^ ;マⳊ", mood: "soggy baby", max: 15 },
+      { emoticon: "/ᐠ｡‸｡マ⟆", mood: "misty but trying", max: 25 },
+      { emoticon: "≽^- ˕ -^≼", mood: "neutral puddle cat", max: 35 },
+      { emoticon: "≽^•˕• ྀི≼", mood: "polite dry floof", max: 45 },
+      { emoticon: "₍^•⩊•^₎⟆ ₊˚⊹ 🍞", mood: "CRISPY BAKED LOAF", max: Infinity },
+    ];
+
+    let towelCount = 0;
+    let patCount = 0;
+    let isBlinking = false;
+    const maxTowel = 50;
+    const maxPat = 10;
+
+    const rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8f00ff', '#ff1493', '#00ffff', '#ffa500'];
+
+    const clickSound = document.getElementById('click-sound');
+    const mlemSound = document.getElementById('mlem-sound');
+
+    function getCurrentStage() {
+      return stages.find(stage => towelCount <= stage.max);
+    }
+
+    function getTone() {
+      if (patCount < 4) return "feeling alone";
+      if (patCount < 8) return "gently comforted";
+      return "glowing with inner courage";
+    }
+
+    function updateDisplay(emoticon, baseMood) {
+      document.getElementById("cat").textContent = emoticon;
+      document.getElementById("mood").textContent = `mood: ${baseMood} + ${getTone()}`;
+
+      const fillPercent = Math.min(towelCount / maxTowel, 1) * 100;
+      const meterFill = document.getElementById("meter-fill");
+      meterFill.style.width = `${fillPercent}%`;
+
+      if (fillPercent < 50) {
+        const greenVal = Math.round((fillPercent / 50) * 255);
+        meterFill.style.backgroundColor = `rgb(255, ${greenVal}, 0)`;
+      } else {
+        const redVal = Math.round(255 - ((fillPercent - 50) / 50) * 255);
+        meterFill.style.backgroundColor = `rgb(${redVal}, 255, 0)`;
+      }
+
+      document.getElementById("counter").textContent = `towel count: ${towelCount}`;
+
+      updateDrizzleIntensity();
+    }
+
+    function updateComfortBar() {
+      const maxHearts = 10;
+      const filled = Math.min(patCount, maxHearts);
+      const empty = maxHearts - filled;
+      const bar = document.getElementById("comfort-bar");
+      bar.innerHTML = '';
+
+      for (let i = 0; i < filled; i++) {
+        const heart = document.createElement("span");
+        heart.className = "heart";
+        heart.textContent = "♥";
+        heart.style.color = (filled === maxHearts) ? rainbowColors[i % rainbowColors.length] : "#e63946";
+        bar.appendChild(heart);
+      }
+
+      for (let i = 0; i < empty; i++) {
+        const heart = document.createElement("span");
+        heart.className = "heart";
+        heart.textContent = "♡";
+        heart.style.color = "#555";
+        bar.appendChild(heart);
+      }
+    }
+
+    const drizzleContainer = document.getElementById("drizzle-container");
+    const drizzleCount = 15;
+    const drips = [];
+
+    for (let i = 0; i < drizzleCount; i++) {
+      const drop = document.createElement('div');
+      drop.className = 'drizzle-drop';
+      drop.textContent = 'ﾟ⋆';
+      drop.style.left = `${Math.random() * 180}px`;
+      drop.style.animationDuration = `${2 + Math.random() * 3}s`;
+      drop.style.animationDelay = `${Math.random() * 5}s`;
+      drizzleContainer.appendChild(drop);
+      drips.push(drop);
+    }
+
+    const weatherIcon = document.getElementById('weather-icon');
+
+    function updateDrizzleIntensity() {
+      const drynessRatio = Math.min((towelCount + patCount) / (maxTowel + maxPat), 1);
+
+      drips.forEach((drip, i) => {
+        const opacity = 0.8 * (1 - drynessRatio);
+        drip.style.opacity = opacity.toFixed(2);
+        drip.style.animationDuration = `${2 + i * 0.2 + drynessRatio * 3}s`;
+      });
+
+      if (drynessRatio < 1) {
+        weatherIcon.textContent = '☁︎';
+        weatherIcon.classList.remove('sun');
+        weatherIcon.style.color = '#5a8de3';
+        weatherIcon.style.opacity = '1';
+        weatherIcon.style.transform = `translateX(${- drynessRatio * 300}px)`;
+      } else {
+        weatherIcon.textContent = '☼';
+        weatherIcon.classList.add('sun');
+        weatherIcon.style.color = '#ffdd33';
+        weatherIcon.style.opacity = '1';
+        weatherIcon.style.transform = 'translateX(0)';
+      }
+    }
+
+    function playClickSound() {
+      clickSound.currentTime = 0;
+      clickSound.play();
+    }
+
+    function playMlemSound() {
+      mlemSound.currentTime = 0;
+      mlemSound.play();
+    }
+
+    function floofCat(event) {
+      if (isBlinking) return;
+      playClickSound();
+
+      towelCount++;
+      const stage = getCurrentStage();
+      updateDisplay(stage.emoticon, stage.mood);
+
+      // Sprinkle a ❄ snowflake
+      const flake = document.createElement("div");
+      flake.className = "floof-flake";
+      flake.textContent = "❄";
+      const x = event.clientX + (Math.random() * 40 - 20);
+      const y = event.clientY + (Math.random() * 20 - 10);
+      flake.style.left = `${x}px`;
+      flake.style.top = `${y}px`;
+      document.body.appendChild(flake);
+      setTimeout(() => flake.remove(), 1200);
+    }
+
+    function patPat(event) {
+      if (isBlinking) return;
+      isBlinking = true;
+      playClickSound();
+
+      patCount++;
+
+      const stage = getCurrentStage();
+      const blinkEmoticon = "〰つ/ᐠ . _ . マ";
+      updateDisplay(blinkEmoticon, stage.mood);
+      updateComfortBar();
+
+      if (patCount === maxPat) {
+        playMlemSound();
+      }
+
+      const patText = document.createElement('div');
+      patText.className = 'pat-text';
+      patText.style.left = `${event.clientX - 20}px`;
+      patText.style.top = `${event.clientY - 40}px`;
+      patText.innerHTML = `<img src="paw.png" class="paw-print" alt="pink paw" /> *pat*`;
+      document.body.appendChild(patText);
+      setTimeout(() => patText.remove(), 1000);
+
+      setTimeout(() => {
+        updateDisplay(stage.emoticon, stage.mood);
+        isBlinking = false;
+      }, 500);
+    }
+
+    updateDisplay(stages[0].emoticon, stages[0].mood);
+    updateComfortBar();
+  </script>
+
+</body>
+</html>
