@@ -7,7 +7,6 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-  /* Center all content vertically and horizontally */
   body {
     font-family: 'Press Start 2P', cursive;
     background-color: #e0e0e0;
@@ -15,7 +14,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* changed from flex-start */
+    justify-content: center;
     min-height: 100vh;
     padding: 2rem;
     text-align: center;
@@ -32,7 +31,7 @@
 
   h1 {
     font-size: 1.2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
     position: relative;
   }
 
@@ -48,14 +47,13 @@
   /* Stars container */
   #stars-container {
     position: absolute;
-    top: 3.2rem; /* lowered from 2.5rem to clear overlap */
+    top: 2.5rem;
     left: 0;
     width: 100%;
     height: 100px;
     pointer-events: none;
     overflow: visible;
-    display: none;
-    z-index: 15;
+    display: none; /* hidden by default */
   }
 
   .star {
@@ -83,12 +81,14 @@
     font-family: 'Courier New', monospace;
   }
 
-  /* Fix mood height and remove repeated 'mood:' */
   .mood {
     font-size: 0.8rem;
     margin-bottom: 1rem;
-    height: 1.2rem;
+    height: 1.2rem; /* fixed height to prevent overlap */
     white-space: nowrap;
+    overflow: hidden;
+    line-height: 1.2rem;
+    user-select: none;
   }
 
   .meter {
@@ -193,7 +193,7 @@
   .floof-flake {
     position: absolute;
     font-size: 1.4rem;
-    color: #7ec8f5;
+    color: #bdf;
     opacity: 1;
     animation: snowFloat 1.5s ease-out forwards;
     pointer-events: none;
@@ -242,6 +242,22 @@
     pointer-events: none;
     transition: transform 2s ease, opacity 2s ease;
     z-index: 20;
+    will-change: transform, opacity;
+  }
+
+  #moon {
+    position: absolute;
+    top: 120px; /* pushed down to avoid overlap */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    color: #99ccff;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 2s ease;
+    z-index: 19; /* behind cloud */
+    will-change: opacity;
   }
 
   #sun {
@@ -251,20 +267,6 @@
     transform: translateX(-50%);
     font-size: 3rem;
     color: #f2d024; /* bright yellow sun */
-    user-select: none;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 2s ease;
-    z-index: 20;
-  }
-
-  #moon {
-    position: absolute;
-    top: 85px; /* moved moon down so no overlap with cloud */
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 3rem;
-    color: #99ccff; /* pale blue moon */
     user-select: none;
     pointer-events: none;
     opacity: 0;
@@ -284,13 +286,9 @@
     .meter {
       width: 150px;
     }
-    #cloud, #sun {
+    #cloud, #sun, #moon {
       font-size: 2rem;
       top: 30px;
-    }
-    #moon {
-      top: 65px;
-      font-size: 2rem;
     }
     #drizzle {
       top: 70px;
@@ -306,7 +304,7 @@
   <div id="stars-container"></div>
 
   <div class="emoticat" id="cat">(＿ ＿ ) Ⳋ</div>
-  <div class="mood" id="mood">deflated blob + feeling alone</div> <!-- removed extra 'mood:' -->
+  <div class="mood" id="mood">mood: deflated blob + feeling alone</div>
 
   <div class="meter">
     <div class="meter-fill" id="meter-fill"></div>
@@ -331,10 +329,8 @@
   <div id="sun">☼</div>
   <div id="moon">⏾</div>
 
-  <audio id="click-sound" src="click.mp3" preload="auto"></audio>
-  <audio id="mlem-sound" src="mlem.mp3" preload="auto"></audio>
-
 <script>
+  // Emoticon stages
   const stages = [
     { emoticon: "(＿ ＿ ) Ⳋ", mood: "deflated blob", max: 5 },
     { emoticon: "/ᐠ; ^ ;マⳊ", mood: "soggy baby", max: 15 },
@@ -367,11 +363,6 @@
   const sleepToggleBtn = document.getElementById('sleep-toggle');
   const bathBtn = document.getElementById('bath-btn');
 
-  const clickSound = document.getElementById('click-sound');
-  const mlemSound = document.getElementById('mlem-sound');
-
-  createStars();
-
   function getCurrentStage() {
     return stages.find(stage => towelCount <= stage.max);
   }
@@ -383,22 +374,57 @@
   }
 
   function updateDisplay(emoticon, baseMood) {
-    // Use special moods for bubble bath and sleep
     if (isSleeping) {
       catElem.textContent = '(っ⸍⸌- ‸ - ⸍⸌)つ🧸';
       moodElem.textContent = "sleepy and cozy + filled with determination!";
+
+      drizzle.style.display = 'none';
+      cloud.style.opacity = 0;
+      sun.style.opacity = 0;
+
+      moon.style.opacity = 1;
+
+      skyIcon.textContent = "⏾";
+      starsContainer.style.display = 'block';
+      document.body.classList.add('night');
     } else if (isBubbleBath) {
       catElem.textContent = '🫧 ꒰^•⩊•^꒱ ⊹˚🛁';
       moodElem.textContent = "fresh and bubbly + " + getTone();
+
+      drizzle.style.display = 'block';
+      sun.style.opacity = 0;
+
+      cloud.style.opacity = 1;
+      moon.style.opacity = 0;
+
+      skyIcon.textContent = "☁︎";
+      starsContainer.style.display = 'none';
+      document.body.classList.remove('night');
     } else {
       catElem.textContent = emoticon;
       moodElem.textContent = `${baseMood} + ${getTone()}`;
+
+      const drynessRatio = Math.min(towelCount / 50, 1);
+      const comfortRatio = Math.min(patCount / maxComfortHearts, 1);
+
+      drizzle.style.opacity = Math.max(0, 1 - drynessRatio - comfortRatio * 0.5);
+      drizzle.style.display = drizzle.style.opacity > 0.1 ? "block" : "none";
+      drizzle.style.animationDuration = `${3 - drynessRatio * 2}s`;
+
+      cloud.style.opacity = drizzle.style.opacity;
+      cloud.style.transform = `translateX(${(1 - drynessRatio - comfortRatio * 0.5) * 100}px)`;
+
+      sun.style.opacity = drynessRatio > 0.8 ? 1 : 0;
+
+      moon.style.opacity = 0;
+
+      skyIcon.textContent = cloud.style.opacity > 0.2 ? "☁︎" : (sun.style.opacity > 0 ? "☼" : "☁︎");
+      starsContainer.style.display = 'none';
+      document.body.classList.remove('night');
     }
 
-    // Update meter bar
     const fillPercent = Math.min(towelCount / 50, 1) * 100;
     meterFill.style.width = `${fillPercent}%`;
-
     if (fillPercent < 50) {
       const greenVal = Math.round((fillPercent / 50) * 255);
       meterFill.style.backgroundColor = `rgb(255, ${greenVal}, 0)`;
@@ -406,40 +432,10 @@
       const redVal = Math.round(255 - ((fillPercent - 50) / 50) * 255);
       meterFill.style.backgroundColor = `rgb(${redVal}, 255, 0)`;
     }
-
     counterElem.textContent = `towel count: ${towelCount}`;
 
-    // Update sky/weather
-    const totalComfort = Math.min(patCount, maxComfortHearts);
-    const drynessRatio = Math.min(towelCount / 50, 1);
-    const comfortRatio = totalComfort / maxComfortHearts;
-
-    if (!isSleeping) {
-      drizzle.style.opacity = Math.max(0, 1 - drynessRatio - comfortRatio * 0.5);
-      drizzle.style.animationDuration = `${3 - drynessRatio * 2}s`;
-      drizzle.style.display = drizzle.style.opacity > 0.1 ? "block" : "none";
-
-      cloud.style.opacity = drizzle.style.opacity;
-      cloud.style.transform = `translateX(${(1 - drynessRatio - comfortRatio * 0.5) * 100}px)`;
-
-      sun.style.opacity = drynessRatio > 0.8 ? 1 : 0;
-      moon.style.opacity = 0;
-
-      skyIcon.textContent = cloud.style.opacity > 0.2 ? "☁︎" : (sun.style.opacity > 0 ? "☼" : "☁︎");
-
-      starsContainer.style.display = 'none';
-
-      document.body.classList.remove('night');
-    } else {
-      drizzle.style.display = 'none';
-      cloud.style.opacity = 0;
-      sun.style.opacity = 0;
-      moon.style.opacity = 1;
-      skyIcon.textContent = "⏾";
-      starsContainer.style.display = 'block';
-
-      document.body.classList.add('night');
-    }
+    // enable sleep toggle only if bubble bath done and towel + pats are full
+    sleepToggleBtn.disabled = !(isBubbleBath && towelCount >= 50 && patCount >= maxComfortHearts);
   }
 
   function updateComfortBar() {
@@ -479,16 +475,6 @@
     }
   }
 
-  function playClickSound() {
-    clickSound.currentTime = 0;
-    clickSound.play();
-  }
-
-  function playMlemSound() {
-    mlemSound.currentTime = 0;
-    mlemSound.play();
-  }
-
   function floofCat(event) {
     if (isBlinking || isSleeping) return;
     towelCount++;
@@ -506,75 +492,50 @@
     setTimeout(() => flake.remove(), 1200);
 
     updateComfortBar();
-    updateSleepToggle();
   }
 
-  let isBlinking = false;
-
-  function patPat(event) {
+  function patPat() {
     if (isBlinking || isSleeping) return;
-    isBlinking = true;
-    playMlemSound();
-
+    if (patCount >= maxComfortHearts) return;
     patCount++;
-    const stage = getCurrentStage();
-    const blinkEmoticon = "つ/ᐠ . _ . マ";
-    updateDisplay(blinkEmoticon, stage.mood);
+    updateDisplay(getCurrentStage().emoticon, getCurrentStage().mood);
     updateComfortBar();
 
-    const patText = document.createElement('div');
-    patText.className = 'pat-text';
-    patText.style.left = `${event.clientX - 20}px`;
-    patText.style.top = `${event.clientY - 40}px`;
-    patText.textContent = "pat pat 🐾";
+    // show +1 pat floating text
+    const patText = document.createElement("div");
+    patText.className = "pat-text";
+    patText.style.left = `${window.innerWidth / 2 + (Math.random() * 80 - 40)}px`;
+    patText.style.top = `180px`;
+    patText.textContent = "pat +1 つ";
     document.body.appendChild(patText);
-
-    setTimeout(() => {
-      patText.remove();
-      updateDisplay(stage.emoticon, stage.mood);
-      isBlinking = false;
-    }, 700);
-
-    updateSleepToggle();
+    setTimeout(() => patText.remove(), 1000);
   }
 
   function bubbleBath() {
     if (isSleeping) return;
     isBubbleBath = true;
-    playClickSound();
-    bathBtn.disabled = true;
+    towelCount = 50;
+    patCount = maxComfortHearts;
+    updateDisplay('🫧 ꒰^•⩊•^꒱ ⊹˚🛁', "fresh and bubbly");
     updateComfortBar();
-    updateSleepToggle();
-    updateDisplay(catElem.textContent, moodElem.textContent);
   }
 
   function toggleSleep() {
-    if (!canSleep()) return;
+    if (!(isBubbleBath && towelCount >= 50 && patCount >= maxComfortHearts)) return;
     isSleeping = !isSleeping;
-    playClickSound();
-
-    bathBtn.disabled = isSleeping;
-
-    sleepToggleBtn.textContent = isSleeping ? '🛌 zzz... wake up' : 'ᶻ 𝗓 𐰁 eepy cat';
-
-    updateDisplay(catElem.textContent, moodElem.textContent);
+    updateDisplay(
+      isSleeping ? '(っ⸍⸌- ‸ - ⸍⸌)つ🧸' : getCurrentStage().emoticon,
+      isSleeping ? "sleepy and cozy" : getCurrentStage().mood
+    );
   }
 
-  function canSleep() {
-    // Sleep allowed only if bubble bath done AND towelCount AND patCount sufficient
-    return isBubbleBath && towelCount >= 40 && patCount >= 8;
-  }
-
-  function updateSleepToggle() {
-    sleepToggleBtn.disabled = !canSleep();
-  }
-
-  // Init display
-  updateComfortBar();
+  // Init
   updateDisplay(getCurrentStage().emoticon, getCurrentStage().mood);
-  updateSleepToggle();
+  updateComfortBar();
+  createStars();
 
 </script>
 
 </body>
 </html>
+
