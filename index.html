@@ -6,337 +6,237 @@
   <title>Wet Cat Status Panel</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
     body {
       font-family: 'Press Start 2P', cursive;
-      background: #e0e0e0;
+      background-color: #e0e0e0;
       color: #222;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 100vh;
-      margin: 0;
-      position: relative;
+      padding: 2rem;
+      text-align: center;
       user-select: none;
-      transition: background 0.5s, color 0.5s;
+      position: relative;
+      overflow: hidden;
+      transition: background-color 0.8s ease, color 0.8s ease;
     }
+
     body.night {
-      background: #0b0d17;
+      background-color: #0b0d17;
       color: #cbd5e1;
     }
-    h1 {
-      margin-bottom: 1rem;
+
+    #weather-icons {
       position: relative;
+      height: 3.5rem;
+      margin-bottom: 0.5rem;
     }
-    #sky-icon {
+
+    #sun, #cloud, #moon {
+      font-size: 2.5rem;
       position: absolute;
-      top: 0;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 2rem;
+      top: 0;
+      pointer-events: none;
       user-select: none;
+      transition: opacity 1s ease;
     }
+
+    #sun { color: #f2d024; opacity: 0; z-index: 2; }
+    #cloud { color: #b0c4de; opacity: 1; z-index: 2; }
+    #moon { color: #99ccff; opacity: 0; z-index: 2; }
+
+    h1 {
+      font-size: 1.2rem;
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
     #stars-container {
       position: absolute;
-      top: 2.5rem;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100px;
       pointer-events: none;
-      display: none;
       overflow: visible;
+      display: none;
     }
+
     .star {
       position: absolute;
+      color: #ccf;
       opacity: 0.8;
       font-size: 0.8rem;
-      animation: twinkle 2s infinite alternate;
-      color: #99ccff;
+      animation: twinkle 2s infinite ease-in-out alternate;
     }
+
+    .star:nth-child(2n) {
+      animation-duration: 3s;
+      opacity: 0.5;
+    }
+
     @keyframes twinkle {
-      from { opacity: 0.2; transform: scale(1); }
-      to   { opacity: 1; transform: scale(1.3); }
+      0% { opacity: 0.2; transform: scale(1); }
+      100% { opacity: 1; transform: scale(1.3); }
     }
+
     .emoticat {
       font-size: 2rem;
-      font-family: 'Courier New', monospace;
-      min-height: 2.5rem;
       margin: 1rem 0;
+      min-height: 2.5rem;
+      font-family: 'Courier New', monospace;
     }
+
     .mood {
       font-size: 0.8rem;
-      height: 1.2rem;
-      white-space: nowrap;
-      overflow: hidden;
       margin-bottom: 1rem;
+      height: 1.2rem;
     }
+
     .meter {
       width: 200px;
       height: 20px;
       background: #ccc;
       border: 2px solid #000;
-      box-shadow: inset 2px 2px #888;
+      box-shadow: inset 2px 2px 0 #888;
       margin-bottom: 1rem;
+      position: relative;
+      border-radius: 3px;
     }
+
     .meter-fill {
       height: 100%;
-      width: 0;
-      transition: width 0.3s, background 0.5s;
+      width: 0%;
+      border-radius: 1px;
+      transition: width 0.3s ease, background-color 0.5s ease;
+      background: red;
     }
+
     .comfort-container {
       margin: 1rem 0;
-      text-shadow: 1px 1px #fff;
+      font-size: 1rem;
+      line-height: 1.5;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 0 #fff;
     }
-    #comfort-bar {
+
+    .comfort-label {
+      font-size: 0.6rem;
+      margin-bottom: 0.3rem;
+    }
+
+    #comfort-bar .heart {
       font-size: 1.2rem;
+      padding: 0 2px;
     }
+
     button {
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+      box-shadow: 4px 4px 0 #888;
+      padding: 10px 16px;
       font-family: 'Press Start 2P', cursive;
       font-size: 0.6rem;
-      padding: 10px 16px;
-      margin: 5px;
-      background: #fff;
-      border: 2px solid #000;
-      box-shadow: 4px 4px #888;
       cursor: pointer;
-      transition: transform 0.1s;
+      margin: 5px 8px;
+      user-select: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+      border-radius: 0;
     }
+
     button:active {
-      transform: translate(2px,2px);
-      box-shadow:2px 2px #555;
+      box-shadow: 2px 2px 0 #555;
+      transform: translate(2px, 2px);
     }
+
     button:disabled {
       opacity: 0.4;
       cursor: not-allowed;
     }
-    .floof-flake, #drizzle { position: absolute; pointer-events: none; user-select: none; }
-    .floof-flake {
-      font-size: 1.4rem;
-      color: #7ec8f5;
-      animation: snowFloat 1.5s ease-out forwards;
-    }
-    @keyframes snowFloat {
-      to { transform: translateY(-60px) scale(1.4) rotate(15deg); opacity: 0.5; }
-    }
-    #drizzle {
-      top:90px;
-      font-size:1.6rem;
-      color:#7ec8f5;
-      letter-spacing:6px;
-      animation: drizzleFall 3s linear infinite;
-    }
-    @keyframes drizzleFall {
-      to { transform: translateY(30px); opacity:0; }
-    }
-    #cloud, #sun, #moon {
+
+    .pat-text {
       position: absolute;
-      top:40px;
-      left:50%;
-      transform: translateX(-50%);
-      font-size:3rem;
-      transition: opacity 1s;
+      font-size: 0.7rem;
+      color: #ff69b4;
+      animation: floatUpFade 1s ease forwards;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #fff;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    #cloud { color: #b0c4de; }
-    #sun { color: #f2d024; opacity: 0; }
-    #moon { color: #99ccff; top: 120px; opacity: 0; }
+
+    .paw-print {
+      width: 48px;
+      height: 48px;
+      image-rendering: pixelated;
+      transform: scale(2);
+    }
+
+    @keyframes floatUpFade {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-40px); }
+    }
+
+    .floof-flake, .bubble {
+      position: absolute;
+      font-size: 1.4rem;
+      opacity: 1;
+      animation: snowFloat 1.5s ease-out forwards;
+      pointer-events: none;
+      user-select: none;
+      z-index: 30;
+    }
+
+    .floof-flake { color: #bdf; }
+    .bubble { color: #ccefff; }
+
+    @keyframes snowFloat {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-60px) scale(1.4) rotate(15deg); opacity: 0.5; }
+    }
   </style>
 </head>
 <body>
-  <h1>🐾 wet cat status panel <span id="sky-icon">☁︎</span></h1>
+  <div id="weather-icons">
+    <div id="sun">☼</div>
+    <div id="cloud">☁︎</div>
+    <div id="moon">⏾</div>
+  </div>
+
+  <h1>🐾 wet cat status panel</h1>
   <div id="stars-container"></div>
+
   <div class="emoticat" id="cat">(＿ ＿ ) Ⳋ</div>
-  <div class="mood" id="mood">deflated blob + feeling alone</div>
+  <div class="mood" id="mood">mood: deflated blob + feeling alone</div>
+
   <div class="meter"><div class="meter-fill" id="meter-fill"></div></div>
+
   <div class="comfort-container">
-    comfort‑o‑meter:<br><div id="comfort-bar"></div>
+    <div class="comfort-label">comfort-o-meter:</div>
+    <div id="comfort-bar"></div>
   </div>
+
   <div>
-    <button id="floof-btn">🧺 floof with towel</button>
-    <button id="pat-btn">つ(•˕ •マ.ᐟ pat pat</button>
-    <button id="bath-btn" disabled>🫧 bubble bath</button>
-    <button id="sleep-btn" disabled>🛏️ eepy cat</button>
+    <button id="floof-btn" onclick="floofCat(event)">🧺 floof with towel</button>
+    <button id="pat-btn" onclick="patPat(event)">つ(•˕ •マ.ᐟ pat pat</button>
+    <button id="bath-btn" onclick="bubbleBath()" disabled>🫧 bubble bath</button>
+    <button id="sleep-toggle" onclick="toggleSleep()" disabled>ᶻ 𝗓 𐰁 eepy cat</button>
   </div>
+
   <p id="counter">towel count: 0</p>
-  <div id="cloud">☁︎</div>
-  <div id="drizzle">ﾟ⋆ ﾟ⋆ ﾟ⋆</div>
-  <div id="sun">☼</div>
-  <div id="moon">⏾</div>
-  <audio id="click" src="click.mp3"></audio>
-  <audio id="mlem" src="mlem.mp3"></audio>
 
-  <script>
-    const stages = [
-      {e:"(＿ ＿ ) Ⳋ", m:"deflated blob"},
-      {e:"/ᐠ; ^ ;マⳊ", m:"soggy baby"},
-      {e:"/ᐠ｡‸｡マ⟆", m:"misty but trying"},
-      {e:"≽^- ˕ -^≼", m:"neutral puddle cat"},
-      {e:"≽^•˕• ྀི≼", m:"polite dry floof"},
-      {e:"₍^•⩊•^₎⟆ ₊˚⊹ 🍞", m:"CRISPY BAKED LOAF"}
-    ];
-    let towels=0, pats=0, bubble=false, asleep=false;
-    const maxP=10, maxT=50;
-    const rainbow=['#F00','#F70','#FF0','#0F0','#00F','#70F','#F0F'];
+  <audio id="click-sound" src="click.mp3"></audio>
+  <audio id="mlem-sound" src="mlem.mp3"></audio>
 
-    const btns = {
-      floof: document.getElementById('floof-btn'),
-      pat: document.getElementById('pat-btn'),
-      bath: document.getElementById('bath-btn'),
-      sleep: document.getElementById('sleep-btn')
-    };
-    const cat = document.getElementById('cat'),
-          mood = document.getElementById('mood'),
-          meter = document.getElementById('meter-fill'),
-          conf = document.getElementById('comfort-bar'),
-          ctr = document.getElementById('counter'),
-          skyI = document.getElementById('sky-icon'),
-          cloud = document.getElementById('cloud'),
-          drizzle = document.getElementById('drizzle'),
-          sun = document.getElementById('sun'),
-          moon = document.getElementById('moon'),
-          stars = document.getElementById('stars-container');
-    const click = document.getElementById('click'),
-          mlem = document.getElementById('mlem');
-
-    function tone() {
-      if(pats<4) return "feeling alone";
-      if(pats<8) return "gently comforted";
-      return "filled with determination!";
-    }
-
-    function createStars() {
-      stars.innerHTML = '';
-      for(let i=0; i<30; i++){
-        const s = document.createElement('div');
-        s.className='star';
-        s.style.left = Math.random()*100+'%';
-        s.style.top  = Math.random()*100+'px';
-        stars.appendChild(s);
-        s.textContent = ["✦","✩","✪","✫","✬"][i%5];
-      }
-    }
-    createStars();
-
-    function updateSky() {
-      const pT = Math.min(towels/maxT,1), pP = pats/maxP;
-      const cloudy = (!asleep && (!bubble || pT<1));
-      const sunny = (!asleep && bubble && pT===1 && pP===1);
-      const night = asleep;
-
-      cloud.style.opacity = cloudy?1:0;
-      drizzle.style.opacity = cloudy?1:0;
-      drizzle.style.display = cloudy?'block':'none';
-      drizzle.style.animationDuration = `${3-pT*2}s`;
-      sun.style.opacity = sunny?1:0;
-      moon.style.opacity = night?1:0;
-      skyI.textContent = night?'⏾':(cloudy?'☁︎':'☼');
-      stars.style.display = night?'block':'none';
-      document.body.classList.toggle('night', night);
-    }
-
-    function updateMeter() {
-      const p = Math.min(towels/maxT,1);
-      meter.style.width = p*100+'%';
-      meter.style.background = p<0.5
-        ? `rgb(255,${Math.round(p/0.5*255)},0)`
-        : `rgb(${Math.round(255-(p-0.5)/0.5*255)},255,0)`;
-    }
-
-    function updateComfort() {
-      conf.innerHTML='';
-      for(let i=0;i<pats;i++){
-        const sp = document.createElement('span');
-        sp.textContent='♥';
-        sp.style.color = pats===maxP ? rainbow[i%rainbow.length] : '#e63946';
-        conf.appendChild(sp);
-      }
-      for(let i=pats;i<maxP;i++){
-        const sp = document.createElement('span');
-        sp.textContent='♡';
-        sp.style.color = '#555';
-        conf.appendChild(sp);
-      }
-    }
-
-    function updateMood() {
-      if(asleep){
-        cat.textContent='(っ⸍⸌- ‸ - ⸍⸌)つ🧸';
-        mood.textContent = "dreaming peacefully";
-        btns.sleep.textContent = '☀️ wake up, wet cat!';
-      }
-      else if(bubble){
-        cat.textContent='🫧 ꒰^•⩊•^꒱ ⊹˚🛁';
-        mood.textContent = `fresh and bubbly + ${tone()}`;
-        btns.sleep.textContent = '🛏️ eepy cat';
-      }
-      else {
-        const st = stages[Math.min(towels/10,5)|0];
-        cat.textContent = st.e;
-        mood.textContent = `${st.m} + ${tone()}`;
-        btns.sleep.textContent = '🛏️ eepy cat';
-      }
-    }
-
-    function updateAll() {
-      updateMood();
-      updateMeter();
-      updateComfort();
-      updateSky();
-      ctr.textContent = `towel count: ${towels}`;
-      btns.bath.disabled = !(towels>=maxT && pats>=maxP);
-      btns.sleep.disabled = !(bubble && towels>=maxT && pats>=maxP);
-    }
-
-    btns.floof.onclick = e => {
-      if(asleep) return;
-      click.currentTime=0; click.play();
-      if(towels < maxT) {
-        towels++;
-        const f = document.createElement('div');
-        f.className='floof-flake';
-        f.textContent='❄';
-        document.body.appendChild(f);
-        f.style.left = e.clientX+(Math.random()*40-20)+'px';
-        f.style.top = e.clientY+(Math.random()*20-10)+'px';
-        setTimeout(()=>f.remove(),1200);
-      }
-      updateAll();
-    };
-
-    btns.pat.onclick = () => {
-      if(asleep || pats>=maxP) return;
-      click.currentTime=0; click.play();
-      pats++;
-      if(pats===maxP) { mlem.currentTime=0; mlem.play(); }
-      updateAll();
-    };
-
-    btns.bath.onclick = () => {
-      if(asleep || btns.bath.disabled) return;
-      click.currentTime=0; click.play();
-      bubble = true;
-      // Add bubble emojis on click
-      for(let i=0; i<15; i++){
-        const b = document.createElement('div');
-        b.textContent='🫧';
-        b.style.position='absolute';
-        b.style.left = window.innerWidth/2 + (Math.random()*200-100)+'px';
-        b.style.top  = window.innerHeight/2 + (Math.random()*200-100)+'px';
-        b.style.opacity=1;
-        b.style.transition='opacity 1s';
-        document.body.appendChild(b);
-        setTimeout(()=>b.remove(),1000);
-      }
-      updateAll();
-    };
-
-    btns.sleep.onclick = () => {
-      if(btns.sleep.disabled) return;
-      click.currentTime=0; click.play();
-      asleep = !asleep;
-      updateAll();
-    };
-
-    updateAll();
-  </script>
+  <script src="wetcat.js"></script>
 </body>
 </html>
-
